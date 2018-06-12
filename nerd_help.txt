@@ -1,0 +1,37 @@
+
+                                         |        
+    /\    / .___ .__. .___  .    .  _   _|  _  
+   /  \  /  |__  |__| |   \ |\  /| / \ / | |_| 
+  /    \/   |___ |  \ |___/ | \/ | \_/ \_| |__ 
+  ==========================|====|=============
+ 
+   RUN nerd_mode FOLLOWED BY THE INSTALL NAME FOLLOWED BY AN OPTION 
+   *EXAMPLES BELOW WOULD BE RUNNING nerd_mode ON THE LYST WEBSITE
+
+    -h --help :: displays script info
+   
+    -c --core :: go to the location of wp core files
+    [EXAMPLE] >_ nerd_mode lyst --core  
+    
+    -d --dupe <post number> <new post title> :: duplicates a wp post and gives it title thetitle
+    [EXAMPLE] >_ nerd_mode lyst --dupe 5683 "Schedule a Tour 2" 
+    
+    -f --files :: goes to the directory where you can save files
+    [EXAMPLE] >_ nerd_mode lyst --files 
+    
+    -p --plugins :: goes to the location of plugins
+    [EXAMPLE] >_ nerd_mode lyst --plugins 
+    
+    -s --secure <domain> :: converts site thedomain urls to secure version.
+    [EXAMPLE] >_ nerd_mode lyst --secure thelyst.com 
+ 
+    -t --theme :: goes to the location of the child theme
+    [EXAMPLE] >_ nerd_mode lyst --theme 
+
+    -u --upload <file name> :: uploads a file file to the private folder
+    [EXAMPLE] >_ nerd_mode lyst --upload someplugin.zip
+
+    -b --bprof <bash profile file> :: loads custom bash profile profile
+
+    -v --vimrc <vimrc file> :: loads custom vimrc file vrc
+

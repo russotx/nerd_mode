@@ -1,0 +1,229 @@
+#!/bin/bash
+
+#                                        |     
+#   /\    / .___ .__. .___  .    .  _   _|  _  
+#  /  \  /  |__  |__| |   \ |\  /| / \ / | |_| 
+# /    \/   |___ |  \ |___/ | \/ | \_/ \_| |__ 
+# ==========================|====|=============
+# 
+
+# NERD MODE for ssh into WP Engine installs
+# provides utilities for common tasks
+
+# flags and options
+# -c --core goes to the location of wp core files
+# -t --theme goes to the location of the child theme
+# -p --plugins goes to the location of plugins
+# -b --bprof <$profile> loads custom bash profile $profile
+# -v --vimrc <$vrc> loads custom vimrc file $vrc
+# -d --dupe duplicates a wp post
+# -s --secure converts site urls to secure version.
+# -h --help displays script info
+# -u --upload <$file> uploads a file $file to the private folder
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+show_help() {
+  cat $HOME/Code/Bash-scripts/nerd_help.txt
+  exit 1
+}
+
+# Initialize all the option variables.
+# This ensures we are not contaminated by variables from the environment.
+if [ $1 = '-h' ]; then
+  show_help
+else
+  wpinstall=$1
+  shift
+fi
+
+file=
+profile=
+vrc=
+location=
+action=
+thepost=
+thetitle=
+thedomain=
+
+while :; do
+    case $1 in
+        -h|--help)
+            show_help    # Display a usage synopsis.
+            exit
+            ;;
+        -c|--core)
+            location="core"
+            shift
+            break
+            ;;
+        -f|--files)
+            location="files"
+            shift
+            break
+            ;;
+        -p|--plugins)
+            location="plugins"
+            shift
+            break
+            ;;
+        -t|--theme)
+            location="theme"
+            shift
+            break
+            ;;
+        -u|--upload)       # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                file=$2
+                action="upload"
+                shift
+                shift
+                break
+            else
+                die 'ERROR: "--upload" requires a non-empty option argument.'
+            fi
+            ;;
+        --upload=?*)
+            file=${1#*=} # Delete everything up to "=" and assign the remainder.
+            action="upload"
+            shift
+            break
+            ;;
+        --upload=)         # Handle the case of an empty --file=
+            die 'ERROR: "--upload" requires a non-empty option argument.'
+            ;;
+        -d|--dupe)       # Takes an option argument; ensure it has been specified.
+            if [ "$2" ]; then
+                thepost=$2
+                action="dupe"
+                if [ "$3" ]; then
+                  thetitle=$3
+                  shift
+                  shift
+                  shift
+                  break
+                else 
+                  shift
+                  shift
+                  break
+                fi
+            else
+                die 'ERROR: "--dupe" requires a non-empty option argument.'
+            fi
+            ;;
+        --dupe=?*)
+            thepost=${1#*=} # Delete everything up to "=" and assign the remainder.
+            action="dupe"
+            if [ "$2" ]; then
+              thetitle=$2
+              shift
+              shift
+              break
+            fi
+            ;;
+        --dupe=)         # Handle the case of an empty --file=
+            die 'ERROR: "--dupe" requires a non-empty option argument.'
+            ;;
+        -s|--secure)
+            action="secure"
+            if [ "$2" ]; then
+              thedomain=$2
+              shift
+              shift
+              break
+            else 
+              die 'ERROR: "--secure" requires a domain name option argument.'
+            fi 
+            ;;
+        -sd|--secure-dry)
+            action="secure-dry"
+            if [ "$2" ]; then
+              thedomain=$2
+              shift
+              shift
+              break
+            else 
+              die 'ERROR: "--secure" requires a domain name option argument.'
+            fi 
+            ;;
+        --)              # End of all options.
+            shift
+            break
+            ;;
+        -?*)
+            printf 'WARN: Unknown option (ignored): %s\n' "$1" >&2
+            ;;
+        *)               # Default case: No more options, so break out of the loop.
+            break
+    esac
+    shift
+done
+
+if [ "$action" ]; then
+  case $action in
+    "dupe")
+        if [ "$thetitle" ]; then
+          wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net post get "$thepost" --field=content | wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net post create - --post_type=page --post_title="$thetitle"
+          exit 1
+        else
+          wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net post get "$thepost" --field=content | wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net post create - --post_type=page 
+          exit 1
+        fi
+        ;;    
+    "secure")
+        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http://$thedomain" "https://$thedomain" --skip-columns=guid ;
+        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http://$wpinstall.wpengine.com" "https://$thedomain" --skip-columns=guid ;
+        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "https://$wpinstall.wpengine.com" "https://$thedomain" --skip-columns=guid ;
+        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http:" "https:" 'wp_rg_form*' --all-tables-with-prefix --skip-columns=guid ;
+        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http:" "https:" 'wp_gf_form*' --all-tables-with-prefix --skip-columns=guid ;
+        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http:" "https:" 'wp_hustle_modules*' --all-tables-with-prefix --skip-columns=guid ;
+        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "https://$wpinstall.wpengine.com" "https://$thedomain" 'wp_hustle_modules*' --all-tables-with-prefix --skip-columns=guid ;
+        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http:" "https:" 'wp_wpgmza*' --all-tables-with-prefix --skip-columns=guid ;
+        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "https://$wpinstall.wpengine.com" "https://$thedomain" 'wp_wpgmza*' --all-tables-with-prefix --skip-columns=guid ;
+        ssh $wpinstall@$wpinstall.ssh.wpengine.net "sed -i -e 's/http:/https:/g' ~/sites/$wpinstall/wp-config.php" ;
+        ssh $wpinstall@$wpinstall.ssh.wpengine.net "sed -i -e 's#https://'"$wpinstall"'.wpengine.com#https://'"$thedomain"'#g' ~/sites/$wpinstall/wp-config.php" ;
+        ssh $wpinstall@$wpinstall.ssh.wpengine.net "sed -i -e 's#http://thelyst#https://thelyst#g' ~/sites/$wpinstall/wp-content/themes/child/header-client-area.php" ;
+        ssh $wpinstall@$wpinstall.ssh.wpengine.net "sed -i -e 's/http:/https:/g' ~/sites/$wpinstall/wp-content/themes/child/style.css" ;
+        ssh $wpinstall@$wpinstall.ssh.wpengine.net "sed -i -e 's#https://'"$wpinstall"'.wpengine.com#https://'"$thedomain"'#g' ~/sites/$wpinstall/wp-content/themes/child/style.css" ;
+        exit 1
+        ;;
+    "secure-dry")
+        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http://$thedomain" "https://$thedomain" --skip-columns=guid --dry-run ;
+        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http://$wpinstall.wpengine.com" "https://$thedomain" --skip-columns=guid --dry-run ;
+        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "https://$wpinstall.wpengine.com" "https://$thedomain" --skip-columns=guid --dry-run ;
+        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http:" "https:" 'wp_rg_form*' --all-tables-with-prefix --skip-columns=guid --dry-run ;
+        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http:" "https:" 'wp_gf_form*' --all-tables-with-prefix --skip-columns=guid --dry-run ;
+        exit 1
+        ;;
+    "upload")
+        cat $file | ssh $wpinstall@$wpinstall.ssh.wpengine.net "cat > ~/sites/$wpinstall/_wpeprivate/$file"
+        exit 1
+        ;;
+    *)
+        die 'ERROR: unknown action "$action"' 
+  esac
+elif [ "$location" ]; then
+    case $location in
+      "theme")
+          ssh $wpinstall@$wpinstall.ssh.wpengine.net -t "cd sites/$wpinstall/wp-content/themes/child ; bash -l"
+          ;;
+      "core")
+          ssh $wpinstall@$wpinstall.ssh.wpengine.net -t "cd sites/$wpinstall ; bash -l"
+          ;;
+      "plugins")
+          ssh $wpinstall@$wpinstall.ssh.wpengine.net -t "cd /sites/$wpinstall/wp-content/plugins ; bash -l"
+          ;;
+      "files")
+          ssh $wpinstall@$wpinstall.ssh.wpengine.net -t "cd /sites/$wpinstall/_wpeprivate ; bash -l"
+          ;;
+      *)
+          die  'ERROR: unknown remote directory destination "$location"'
+    esac
+else
+  die 'ERROR: no action to take.'
+fi
+
+exit 1
