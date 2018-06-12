@@ -27,7 +27,7 @@ die() {
 }
 
 show_help() {
-  cat $HOME/Code/Bash-scripts/nerd_help.txt
+  cat /usr/local/bin/nerd_help.txt
   exit 1
 }
 
