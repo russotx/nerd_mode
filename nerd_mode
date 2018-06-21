@@ -183,6 +183,7 @@ if [ "$action" ]; then
         wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "https://$wpinstall.wpengine.com" "https://$thedomain" 'wp_hustle_modules*' --all-tables-with-prefix --skip-columns=guid ;
         wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http:" "https:" 'wp_wpgmza*' --all-tables-with-prefix --skip-columns=guid ;
         wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "https://$wpinstall.wpengine.com" "https://$thedomain" 'wp_wpgmza*' --all-tables-with-prefix --skip-columns=guid ;
+        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http://modernmsg" "https://modernmsg" --skip-columns=guid ;
         ssh $wpinstall@$wpinstall.ssh.wpengine.net "sed -i -e 's/http:/https:/g' ~/sites/$wpinstall/wp-config.php" ;
         ssh $wpinstall@$wpinstall.ssh.wpengine.net "sed -i -e 's#https://'"$wpinstall"'.wpengine.com#https://'"$thedomain"'#g' ~/sites/$wpinstall/wp-config.php" ;
         ssh $wpinstall@$wpinstall.ssh.wpengine.net "sed -i -e 's#http://thelyst#https://thelyst#g' ~/sites/$wpinstall/wp-content/themes/child/header-client-area.php" ;
