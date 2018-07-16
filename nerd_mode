@@ -177,8 +177,8 @@ if [ "$action" ]; then
         wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http://$thedomain" "https://$thedomain" --skip-columns=guid ;
         wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http://$wpinstall.wpengine.com" "https://$thedomain" --skip-columns=guid ;
         wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "https://$wpinstall.wpengine.com" "https://$thedomain" --skip-columns=guid ;
-        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http:" "https:" 'wp_rg_form*' --all-tables-with-prefix --skip-columns=guid ;
-        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http:" "https:" 'wp_gf_form*' --all-tables-with-prefix --skip-columns=guid ;
+        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http:" "https:" 'wp_rg_form_meta' --all-tables-with-prefix --skip-columns=guid ;
+        wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http:" "https:" 'wp_gf_form_meta' --all-tables-with-prefix --skip-columns=guid ;
         wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http:" "https:" 'wp_hustle_modules*' --all-tables-with-prefix --skip-columns=guid ;
         wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "https://$wpinstall.wpengine.com" "https://$thedomain" 'wp_hustle_modules*' --all-tables-with-prefix --skip-columns=guid ;
         wp --ssh=$wpinstall@$wpinstall.ssh.wpengine.net search-replace "http:" "https:" 'wp_wpgmza*' --all-tables-with-prefix --skip-columns=guid ;
